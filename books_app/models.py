@@ -4,7 +4,7 @@ from sqlalchemy.orm import backref
 from flask_login import UserMixin
 import enum
 
-
+# -------------------
 class FormEnum(enum.Enum):
     """Helper class to make it easier to use enums with forms."""
     @classmethod
@@ -14,14 +14,15 @@ class FormEnum(enum.Enum):
     def __str__(self):
         return str(self.value)
 
-
+# -------------------
 class Audience(FormEnum):
+    """Audience Model"""
     CHILDREN = 'Children'
     YOUNG_ADULT = 'Young Adult'
     ADULT = 'Adult'
     ALL = 'All'
 
-
+# -------------------
 class Book(db.Model):
     """Book model."""
     id = db.Column(db.Integer, primary_key=True)
@@ -31,7 +32,7 @@ class Book(db.Model):
     # The author - Who wrote it?
     author_id = db.Column(db.Integer, db.ForeignKey('author.id'), nullable=False)
     author = db.relationship('Author', back_populates='books')
-    
+
     # The audience - Who is this book written for?
     audience = db.Column(db.Enum(Audience), default=Audience.ALL)
 
@@ -49,7 +50,7 @@ class Book(db.Model):
     def __repr__(self):
         return f'<Book: {self.title}>'
 
-
+# -------------------
 class Author(db.Model):
     """Author model."""
     id = db.Column(db.Integer, primary_key=True)
@@ -63,7 +64,7 @@ class Author(db.Model):
     def __repr__(self):
         return f'<Author: {self.name}>'
 
-
+# -------------------
 class Genre(db.Model):
     """Genre model."""
     id = db.Column(db.Integer, primary_key=True)
@@ -83,8 +84,9 @@ book_genre_table = db.Table('book_genre',
     db.Column('genre_id', db.Integer, db.ForeignKey('genre.id'))
 )
 
-
-class User(db.Model):
+# -------------------
+class User(UserMixin, db.Model):
+    """User Model"""
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(80), nullable=False, unique=True)
     password = db.Column(db.String(200), nullable=False)
