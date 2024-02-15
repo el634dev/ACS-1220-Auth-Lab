@@ -23,11 +23,12 @@ def homepage():
 
 
 @main.route('/create_book', methods=['GET', 'POST'])
+@login_required
 def create_book():
     form = BookForm()
 
     # if form was submitted and contained no errors
-    if form.validate_on_submit(): 
+    if form.validate_on_submit():
         new_book = Book(
             title=form.title.data,
             publish_date=form.publish_date.data,
@@ -80,33 +81,46 @@ def book_detail(book_id):
 
     return render_template('book_detail.html', book=book, form=form)
 
-
+# --------------------------------------------------
+# Profile Route
 @main.route('/profile/<username>')
 def profile(username):
+    """User's profile"""
     # TODO: Make a query for the user with the given username, and send to the
     # template
 
-    # STRETCH CHALLENGE: Add ability to modify a user's username or favorite 
+    # STRETCH CHALLENGE: Add ability to modify a user's username or favorite
     # books
     return render_template('profile.html', username=username)
 
-
-# TODO: Add `@login_required`
+# --------------------------------------------------
+# Favorite Route
 @main.route('/favorite/<book_id>', methods=['POST'])
+@login_required
 def favorite_book(book_id):
+    """Add book when user hits favorite"""
     book = Book.query.get(book_id)
-    # TODO: If the book is not already in user's favorites, then add it,
+    # If the book is not already in user's favorites, then add it,
+    if book not in current_user.favorite_books:
+        current_user.favorite_books.append(book)
     # commit the change to the database, and flash a success message.
-
+    db.session.commit()
+    flash('Book was added to favorites')
     # Then, redirect the user to the book detail page for the given book.
-    return "Not yet implemented!"
+    return redirect(url_for('main.book_detail', book_id=book_id))
 
-
-# TODO: Add `@login_required`
+# --------------------------------------------------
+# Unfavorite Route
 @main.route('/unfavorite/<book_id>', methods=['POST'])
+@login_required
 def unfavorite_book(book_id):
-    # TODO: If the book is in user's favorites, then remove it,
+    """Remove book when user hits unfavorite"""
+    book = Book.query.get(book_id)
+    # If the book is in user's favorites, then remove it,
+    if book in current_user.favorite_books:
+        current_user.favorite_books.remove(book)
     # commit the change to the database, and flash a success message.
-
+    db.session.commit()
+    flash('Book was removed from favorites')
     # Then, redirect the user to the book detail page for the given book.
-    return "Not yet implemented!"
+    return redirect(url_for('main.book_detail', book_id=book_id))
